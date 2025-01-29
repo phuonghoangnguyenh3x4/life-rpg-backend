@@ -9,15 +9,17 @@ class PlayerController:
     def create_account(self, request):
         try:
             db = self.dbHelper.get_db()
+            name = request.form.get('name')
             email = request.form.get('email')
             password = request.form.get('password')
 
             # Ensure name, email, and password are provided
-            if not email or not password:
-                return jsonify({'error': 'email, and password are required'}), 400
+            if not name or not email or not password:
+                return jsonify({'error': 'Name, email and password are required'}), 400
 
             # Insert data into the Player table
             result = db['Player'].insert({
+                'name': name,
                 'email': email,
                 'password': password
             })
