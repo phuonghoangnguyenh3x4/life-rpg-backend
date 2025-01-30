@@ -47,7 +47,13 @@ def token_required(f):
 @app.route('/create-account', methods=["POST"])
 def create_account():
     playerController = PlayerController(dbHelper)
-    return playerController.create_account(request)
+    res = playerController.create_account(request)
+    email = request.form.get('email')
+    if res[1] == 201:
+        token = generate_token(email)
+        res = make_response('Account created successfully')
+        res.set_cookie('auth_token', token, httponly=True, secure=True, samesite='none')
+    return res
 
 @app.route('/login', methods=["POST"])
 def login():
