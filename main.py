@@ -23,10 +23,19 @@ CORS(app, supports_credentials=True)
 def generate_token(username):
     token = jwt.encode({
         'username': username,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+        'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
     }, app.config['SECRET_KEY'], algorithm='HS256')
     return token
 
+def decode_token(token):
+    try:
+        payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+        return payload
+    except jwt.ExpiredSignatureError:
+        return 'Token has expired'
+    except jwt.InvalidTokenError:
+        return 'Invalid token'
+    
 # Verify a token
 def token_required(f):
     @wraps(f)
@@ -64,6 +73,13 @@ def login():
         token = generate_token(email)
         res = make_response('Login successful')
         res.set_cookie('auth_token', token, httponly=True, secure=True, samesite='none')
+    return res
+
+@app.route('/logout', methods=["POST"])
+@token_required
+def logout():
+    res = make_response('Logout successful')
+    res.set_cookie('auth_token', '', httponly=True, secure=True, samesite='none', expires=0)
     return res
 
 @app.route('/get-users')
