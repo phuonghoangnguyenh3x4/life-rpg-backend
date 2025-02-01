@@ -9,8 +9,11 @@ class Migrator:
         self.db.execute('''
             CREATE TABLE IF NOT EXISTS Player (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
                 email TEXT NOT NULL UNIQUE,
-                password TEXT NOT NULL
+                password TEXT NOT NULL,
+                name TEXT NOT NULL,
+                level INTEGER DEFAULT 1,   
+                exp INTEGER DEFAULT 0,     
+                money INTEGER DEFAULT 0    
             )
             ''')

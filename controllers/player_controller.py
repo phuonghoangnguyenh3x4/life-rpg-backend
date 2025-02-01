@@ -1,6 +1,7 @@
 from flask import jsonify
 from sqlite_utils.utils import sqlite3
 import logging
+from flask import make_response
 
 class PlayerController:
     def __init__(self, dbHelper):
@@ -24,13 +25,13 @@ class PlayerController:
                 'password': password
             })
             print(result)
-            return jsonify({'message': 'Account created successfully'}), 201
+            return make_response('Account created successfully', 201)
         
         except sqlite3.IntegrityError:
-            return jsonify({'error': 'Email already existed'}), 400
+            return make_response('Email already existed', 400)
         except Exception as e:
             logging.exception(e)
-            return jsonify({'error': 'An error occurred'}), 500
+            return make_response('An error occurred', 500)
         
     def login(self, request):
         try:
@@ -42,10 +43,24 @@ class PlayerController:
             player = list(player)[0]
             
             if player['password'] == password:
-                return jsonify({'message': 'Login successfully'}), 202
+                return make_response('Login successfully', 202)
 
             raise Exception('Login failed')
             
         except Exception as e:
             logging.exception(e)
-            return jsonify({'error': 'Incorrect Email or Password'}), 401
+            return make_response('Incorrect Email or Password', 401)
+        
+    def (self, email):
+        try:
+            db = self.dbHelper.get_db()
+
+            player = db["Player"].rows_where(f"email = ?",[email], limit=1, 
+                                             select="id, email, name, level, exp, money")
+            player = list(player)[0]
+            
+            return make_response(player, 200)
+            
+        except Exception as e:
+            logging.exception(e)
+            return make_response('Can not find player', 404)get_player_by_email

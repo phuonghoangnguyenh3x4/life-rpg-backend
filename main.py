@@ -8,6 +8,7 @@ import jwt
 import datetime
 from functools import wraps
 import base64
+import json
 
 # Load environment variables
 load_dotenv()
@@ -30,11 +31,11 @@ def generate_token(username):
 def decode_token(token):
     try:
         payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
-        return payload
+        return make_response(payload, 200)
     except jwt.ExpiredSignatureError:
-        return 'Token has expired'
+        return make_response('Token has expired', 401)
     except jwt.InvalidTokenError:
-        return 'Invalid token'
+        return make_response('Invalid token', 401)
     
 # Verify a token
 def token_required(f):
@@ -58,9 +59,8 @@ def create_account():
     playerController = PlayerController(dbHelper)
     res = playerController.create_account(request)
     email = request.form.get('email')
-    if res[1] == 201:
+    if res.status_code == 201:
         token = generate_token(email)
-        res = make_response('Account created successfully')
         res.set_cookie('auth_token', token, httponly=True, secure=True, samesite='none')
     return res
 
@@ -69,9 +69,8 @@ def login():
     playerController = PlayerController(dbHelper)
     res = playerController.login(request)
     email = request.form.get('email')
-    if res[1] == 202:
+    if res.status_code == 202:
         token = generate_token(email)
-        res = make_response('Login successful')
         res.set_cookie('auth_token', token, httponly=True, secure=True, samesite='none')
     return res
 
@@ -81,6 +80,23 @@ def logout():
     res = make_response('Logout successful')
     res.set_cookie('auth_token', '', httponly=True, secure=True, samesite='none', expires=0)
     return res
+
+@app.route('/get-player')
+@token_required
+def get_player():
+    token = request.cookies.get('auth_token')
+    res = decode_token(token)
+    if res.status_code != 200:
+        return make_response('Invalid token', 401)
+    
+    json_string = res.data.decode('utf-8')
+    token_dict = json.loads(json_string)
+    email = token_dict['username']
+    playerController = PlayerController(dbHelper)
+    res = playerController.get_player_by_email(email)
+    print(res)
+    return res
+
 
 @app.route('/get-users')
 def get_users():
