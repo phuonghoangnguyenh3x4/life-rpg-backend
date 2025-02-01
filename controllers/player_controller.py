@@ -16,7 +16,7 @@ class PlayerController:
 
             # Ensure name, email, and password are provided
             if not name or not email or not password:
-                return jsonify({'error': 'Name, email and password are required'}), 400
+                return make_response('Name, email and password are required', 400)
 
             # Insert data into the Player table
             result = db['Player'].insert({
@@ -38,6 +38,9 @@ class PlayerController:
             db = self.dbHelper.get_db()
             email = request.form.get('email')
             password = request.form.get('password')
+            
+            if not email or not password:
+                return make_response('Email and password are required', 400)
 
             player = db["Player"].rows_where(f"email = ?",[email], limit=1)
             player = list(player)[0]
@@ -51,16 +54,26 @@ class PlayerController:
             logging.exception(e)
             return make_response('Incorrect Email or Password', 401)
         
-    def (self, email):
+    def get_player_by_email(self, email):
         try:
             db = self.dbHelper.get_db()
 
             player = db["Player"].rows_where(f"email = ?",[email], limit=1, 
-                                             select="id, email, name, level, exp, money")
+                                            select="id, email, name, level, exp, money")
             player = list(player)[0]
             
             return make_response(player, 200)
             
         except Exception as e:
             logging.exception(e)
-            return make_response('Can not find player', 404)get_player_by_email
+            return make_response('Can not find player', 404)
+        
+    def get_id_by_email(self, email):
+        try:
+            db = self.dbHelper.get_db()
+            id = db["Player"].rows_where(f"email = ?",[email], limit=1, select="id")
+            id = list(id)[0]
+            return make_response(id, 200)
+        except Exception as e:
+            logging.exception(e)
+            return make_response('Can not find player', 404)

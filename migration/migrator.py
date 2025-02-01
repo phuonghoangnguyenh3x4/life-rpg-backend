@@ -4,6 +4,7 @@ class Migrator:
 
     def migrate(self):
         self.__createUserTable()
+        self.__createQuestTable()
         
     def __createUserTable(self):
         self.db.execute('''
@@ -15,5 +16,19 @@ class Migrator:
                 level INTEGER DEFAULT 1,   
                 exp INTEGER DEFAULT 0,     
                 money INTEGER DEFAULT 0    
+            )
+            ''')
+        
+    def __createQuestTable(self):
+        self.db.execute('''
+            CREATE TABLE IF NOT EXISTS Quest (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                status TEXT CHECK(status IN ('Todo', 'Doing', 'Done')) NOT NULL,
+                difficulty TEXT CHECK(difficulty IN ('Trivial', 'Easy', 'Normal', 'Hard', 'SuperHard')) NOT NULL,
+                exp INTEGER,
+                money INTEGER,
+                player_id INTEGER NOT NULL,
+                FOREIGN KEY (player_id) REFERENCES Player(id)
             )
             ''')

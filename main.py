@@ -3,6 +3,7 @@ from flask_cors import CORS
 import os
 from helpers.db_helper import DBHelper
 from controllers.player_controller import PlayerController
+from controllers.quest_controller import QuestController
 from flask import Flask, request, jsonify, make_response
 import jwt
 import datetime
@@ -97,11 +98,56 @@ def get_player():
     print(res)
     return res
 
+@app.route('/get-quest')
+@token_required
+def get_quest():
+    token = request.cookies.get('auth_token')
+    res = decode_token(token)
+    if res.status_code != 200:
+        return make_response('Invalid token', 401)
+    
+    json_string = res.data.decode('utf-8')
+    token_dict = json.loads(json_string)
+    email = token_dict['username']
+    playerController = PlayerController(dbHelper)
+    res = playerController.get_id_by_email(email)
+    if res.status_code != 200:
+        return res
+    id = json.loads(res.data)['id']
+    questController = QuestController(dbHelper)
+    res = questController.get_quest_by_player(id)
+    print(res)
+    return res
+
+@app.route('/create-quest', methods=["POST"])
+def create_quest():
+    questController = QuestController(dbHelper)
+    res = questController.create_quest(request)
+    return res
+
+@app.route('/change-quest-status', methods=["POST"])
+def change_quest_status():
+    questController = QuestController(dbHelper)
+    res = questController.change_status(request)
+    return res
+
+@app.route('/change-quest-difficulty', methods=["POST"])
+def change_quest_difficulty():
+    questController = QuestController(dbHelper)
+    res = questController.change_difficulty(request)
+    return res
 
 @app.route('/get-users')
 def get_users():
     db = dbHelper.get_db()
     for row in db["Player"].rows:
+        print(row)
+    return 'ok'
+
+@app.route('/get-quests')
+def get_quests():
+    db = dbHelper.get_db()
+    for row in db["Quest"].rows:
         print(row)
     return 'ok'
 
