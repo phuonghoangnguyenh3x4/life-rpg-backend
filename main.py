@@ -55,6 +55,25 @@ def token_required(f):
         return f(*args, **kwargs)
     return decorated
 
+def check_authorized_quest(f): 
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.cookies.get('auth_token')
+        res = get_player_id_by_token(token)
+        if res.status_code != 200:
+            return res
+        player_id_1 = json.loads(res.data)['id']
+        questController = QuestController(dbHelper)
+        res = questController.get_player_id(request)
+        if res.status_code != 200:
+            return res
+        player_id_2 = json.loads(res.data)['player_id']
+        if player_id_1 != player_id_2:
+            return make_response('Unauthorized', 401)
+        return f(*args, **kwargs)
+    return decorated
+
+
 @app.route('/create-account', methods=["POST"])
 def create_account():
     playerController = PlayerController(dbHelper)
@@ -98,9 +117,7 @@ def get_player():
     print(res)
     return res
 
-@app.route('/get-quest')
-@token_required
-def get_quest():
+def get_player_id_by_token(token):
     token = request.cookies.get('auth_token')
     res = decode_token(token)
     if res.status_code != 200:
@@ -110,7 +127,13 @@ def get_quest():
     token_dict = json.loads(json_string)
     email = token_dict['username']
     playerController = PlayerController(dbHelper)
-    res = playerController.get_id_by_email(email)
+    return playerController.get_id_by_email(email)
+
+@app.route('/get-quest')
+@token_required
+def get_quest():
+    token = request.cookies.get('auth_token')
+    res = get_player_id_by_token(token)
     if res.status_code != 200:
         return res
     id = json.loads(res.data)['id']
@@ -124,14 +147,18 @@ def create_quest():
     questController = QuestController(dbHelper)
     res = questController.create_quest(request)
     return res
-
+    
 @app.route('/change-quest-status', methods=["POST"])
+@token_required
+@check_authorized_quest
 def change_quest_status():
     questController = QuestController(dbHelper)
     res = questController.change_status(request)
     return res
 
 @app.route('/change-quest-difficulty', methods=["POST"])
+@token_required
+@check_authorized_quest
 def change_quest_difficulty():
     questController = QuestController(dbHelper)
     res = questController.change_difficulty(request)
@@ -140,16 +167,14 @@ def change_quest_difficulty():
 @app.route('/get-users')
 def get_users():
     db = dbHelper.get_db()
-    for row in db["Player"].rows:
-        print(row)
-    return 'ok'
+    players = db["Player"].rows
+    return list(players)
 
 @app.route('/get-quests')
 def get_quests():
     db = dbHelper.get_db()
-    for row in db["Quest"].rows:
-        print(row)
-    return 'ok'
+    quests = db["Quest"].rows
+    return list(quests)
 
 # Protected endpoint for test
 @app.route('/check-auth')

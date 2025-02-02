@@ -24,6 +24,17 @@ class QuestController:
         except Exception as e:
             logging.exception(e)
             return make_response('Can not find quests', 404)
+        
+    def get_player_id(self, request):
+        try:
+            quest_id = request.form.get('id')
+            db = self.dbHelper.get_db()
+            res = db["Quest"].rows_where(f"id = ?", [quest_id], select="player_id")
+            quest = list(res)[0]
+            return make_response(quest, 200)
+        except Exception as e:
+            logging.exception(e)
+            return make_response('Can not find quest', 404)
     
     def create_quest(self, request):
         try:
@@ -47,7 +58,7 @@ class QuestController:
                 'money': money,
                 'player_id': player_id
             })
-            return make_response('Quest created successfully', 201)
+            return make_response('Quest created successfully', 200)
         except sqlite3.IntegrityError:
             logging.exception(sqlite3.IntegrityError)
             return make_response('User not existed', 400)
@@ -62,7 +73,7 @@ class QuestController:
             new_status = request.form.get('status')
             
             db["Quest"].update(id, {"status": new_status})
-            return make_response('Status updated successfully', 201)
+            return make_response('Status updated successfully', 200)
         except sqlite3.IntegrityError:
             logging.exception(sqlite3.IntegrityError)
             return make_response('Status not existed', 400)
@@ -77,7 +88,7 @@ class QuestController:
             difficulty = request.form.get('difficulty')
             
             db["Quest"].update(id, {"difficulty": difficulty})
-            return make_response('Difficulty updated successfully', 201)
+            return make_response('Difficulty updated successfully', 200)
         except sqlite3.IntegrityError:
             logging.exception(sqlite3.IntegrityError)
             return make_response('Difficulty not existed', 400)
