@@ -138,7 +138,7 @@ def get_quest():
         return res
     id = json.loads(res.data)['id']
     questController = QuestController(dbHelper)
-    res = questController.get_quest_by_player(id)
+    res = questController.get_quest_by_player(request, id)
     print(res)
     return res
 

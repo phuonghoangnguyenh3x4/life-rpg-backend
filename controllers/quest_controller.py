@@ -15,12 +15,48 @@ class QuestController:
     
     def __init__(self, dbHelper):
         self.dbHelper = dbHelper
+    
+    def get_typed_quests(self, player_id, type, limit, offset): 
+        db = self.dbHelper.get_db()
+        quests = db["Quest"].rows_where(f"player_id = ? and status = ?", [player_id, type], order_by="id desc", limit=limit, offset=offset)
+        return list(quests)
+    
+    def get_typed_quests_count(self, player_id, type):
+        db = self.dbHelper.get_db()
+        count = db["Quest"].count_where("player_id = ? and status = ?", [player_id, type]) 
+        return count
         
-    def get_quest_by_player(self, player_id):
+    def get_3_typed_quests(self, player_id, limit, offset):
+        todos = self.get_typed_quests(player_id, "Todo", limit, offset)
+        doings = self.get_typed_quests(player_id, "Doing", limit, offset)
+        dones = self.get_typed_quests(player_id, "Done", limit, offset)
+        return [*todos, *doings, *dones]
+        
+    def get_max_count_3_typed_quests(self, player_id):
+        todos_count = self.get_typed_quests_count(player_id, "Todo")
+        doings_count = self.get_typed_quests_count(player_id, "Doing")
+        dones_count = self.get_typed_quests_count(player_id, "Done")
+        return max(todos_count, doings_count, dones_count)
+    
+    def get_quest_by_player(self, request, player_id):
         try:
+            page = request.args.get('page', 1, type=int)
+            per_page = request.args.get('per_page', 5, type=int)
+            limit = per_page
+            offset = (page - 1) * per_page
+
             db = self.dbHelper.get_db()
-            quests = db["Quest"].rows_where(f"player_id = ?", [player_id])
-            return make_response(list(quests), 200)
+            total_quests = self.get_max_count_3_typed_quests(player_id)
+            quests = self.get_3_typed_quests(player_id, limit, offset)
+            
+            data = {
+                'total': total_quests,
+                'pages': (total_quests + per_page - 1) // per_page,
+                'current_page': page,
+                'per_page': per_page,
+                'quests': list(quests)
+            }
+            return make_response(data, 200)
         except Exception as e:
             logging.exception(e)
             return make_response('Can not find quests', 404)
