@@ -15,6 +15,7 @@ class Migrator:
                 name TEXT NOT NULL,
                 level INTEGER DEFAULT 1,   
                 exp INTEGER DEFAULT 0,     
+                progress FLOAT DEFAULT 0.0,     
                 money INTEGER DEFAULT 0    
             )
             ''')
@@ -28,6 +29,7 @@ class Migrator:
                 difficulty TEXT CHECK(difficulty IN ('Trivial', 'Easy', 'Normal', 'Hard', 'SuperHard')) NOT NULL,
                 exp INTEGER,
                 money INTEGER,
+                order TEXT,
                 player_id INTEGER NOT NULL,
                 FOREIGN KEY (player_id) REFERENCES Player(id)
             )

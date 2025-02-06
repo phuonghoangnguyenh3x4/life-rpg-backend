@@ -149,11 +149,19 @@ def create_quest():
     return res
     
 @app.route('/change-quest-status', methods=["POST"])
-@token_required
-@check_authorized_quest
+# @token_required
+# @check_authorized_quest
 def change_quest_status():
     questController = QuestController(dbHelper)
     res = questController.change_status(request)
+    return res
+
+@app.route('/change-quest-ord', methods=["POST"])
+# @token_required
+# @check_authorized_quest
+def change_quest_ord():
+    questController = QuestController(dbHelper)
+    res = questController.change_ord(request)
     return res
 
 @app.route('/change-quest-difficulty', methods=["POST"])

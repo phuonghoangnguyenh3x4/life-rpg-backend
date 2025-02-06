@@ -1,8 +1,11 @@
+import json
 from flask import jsonify
 from sqlite_utils.utils import sqlite3
 import logging
 from flask import make_response
 import random
+
+from controllers.player_controller import PlayerController
 
 class QuestController:
     difficulty_exp_map = {
@@ -16,28 +19,80 @@ class QuestController:
     def __init__(self, dbHelper):
         self.dbHelper = dbHelper
     
-    def get_typed_quests(self, player_id, type, limit, offset): 
+    def get_type_quests(self, player_id, type, limit, offset): 
         db = self.dbHelper.get_db()
-        quests = db["Quest"].rows_where(f"player_id = ? and status = ?", [player_id, type], order_by="id desc", limit=limit, offset=offset)
+        quests = db["Quest"].rows_where(f"player_id = ? and status = ?", [player_id, type], order_by="ord desc", limit=limit, offset=offset)
         return list(quests)
     
-    def get_typed_quests_count(self, player_id, type):
+    def get_type_quests_count(self, player_id, type):
         db = self.dbHelper.get_db()
         count = db["Quest"].count_where("player_id = ? and status = ?", [player_id, type]) 
         return count
         
-    def get_3_typed_quests(self, player_id, limit, offset):
-        todos = self.get_typed_quests(player_id, "Todo", limit, offset)
-        doings = self.get_typed_quests(player_id, "Doing", limit, offset)
-        dones = self.get_typed_quests(player_id, "Done", limit, offset)
+    def get_3_type_quests(self, player_id, limit, offset):
+        todos = self.get_type_quests(player_id, "Todo", limit, offset)
+        doings = self.get_type_quests(player_id, "Doing", limit, offset)
+        dones = self.get_type_quests(player_id, "Done", limit, offset)
         return [*todos, *doings, *dones]
-        
-    def get_max_count_3_typed_quests(self, player_id):
-        todos_count = self.get_typed_quests_count(player_id, "Todo")
-        doings_count = self.get_typed_quests_count(player_id, "Doing")
-        dones_count = self.get_typed_quests_count(player_id, "Done")
-        return max(todos_count, doings_count, dones_count)
     
+    def get_3_type_count(self, player_id):
+        todo = self.get_type_quests_count(player_id, "Todo")
+        doing = self.get_type_quests_count(player_id, "Doing")
+        done = self.get_type_quests_count(player_id, "Done")
+        return {
+            'Todo': todo,
+            'Doing': doing,
+            'Done': done
+        }
+
+    def get_prev_page_ord_by_type(self, player_id, page, per_page, type, type_count):
+        offset = ((page - 1) * per_page) - 1
+        if offset < 0:
+            return None
+        if type_count <= 0:
+            return None
+        if offset > type_count:
+            offset = type_count - 1
+        db = self.dbHelper.get_db()
+        quest = db["Quest"].rows_where(f"player_id = ? and status = ?", [player_id, type], order_by="ord desc", limit=1, offset=offset)
+        quest = list(quest)
+        if len(quest) < 1:
+            return None
+        quest = quest[0]
+        print("pre_quest", quest)
+        return quest['ord']
+    
+    def get_next_page_ord_by_type(self, player_id, page, per_page, type, type_count):
+        offset = ((page - 1) * per_page) + per_page
+        if offset >= type_count:
+            return None
+        if type_count <= 0:
+            return None
+        db = self.dbHelper.get_db()
+        quest = db["Quest"].rows_where(f"player_id = ? and status = ?", [player_id, type], order_by="ord desc", limit=1, offset=offset)
+        quest = list(quest)
+        if len(quest) < 1:
+            return None
+        quest = quest[0]
+        print("next_quest", quest)
+        return quest['ord']
+    
+    def get_prev_page_ord(self, player_id, page, per_page, type_counts):
+        types = ['Todo', 'Doing', 'Done']
+        res = {}
+        for type in types:
+            ord = self.get_prev_page_ord_by_type(player_id, page, per_page, type, type_counts[type])
+            res[type] = ord
+        return res
+    
+    def get_next_page_ord(self, player_id, page, per_page, type_counts):
+        types = ['Todo', 'Doing', 'Done']
+        res = {}
+        for type in types:
+            ord = self.get_next_page_ord_by_type(player_id, page, per_page, type, type_counts[type])
+            res[type] = ord
+        return res
+        
     def get_quest_by_player(self, request, player_id):
         try:
             page = request.args.get('page', 1, type=int)
@@ -45,16 +100,22 @@ class QuestController:
             limit = per_page
             offset = (page - 1) * per_page
 
-            db = self.dbHelper.get_db()
-            total_quests = self.get_max_count_3_typed_quests(player_id)
-            quests = self.get_3_typed_quests(player_id, limit, offset)
+            type_counts = self.get_3_type_count(player_id)
+            max_quests = max([v for k,v in type_counts.items()])
+            total_quests = sum([v for k,v in type_counts.items()])
+            quests = self.get_3_type_quests(player_id, limit, offset)
+            prev_ord = self.get_prev_page_ord(player_id, page, per_page, type_counts)
+            next_ord = self.get_next_page_ord(player_id, page, per_page, type_counts)
             
             data = {
                 'total': total_quests,
-                'pages': (total_quests + per_page - 1) // per_page,
+                'max_quests': max_quests,
+                'pages': (max_quests + per_page - 1) // per_page,
                 'current_page': page,
                 'per_page': per_page,
-                'quests': list(quests)
+                'quests': list(quests),
+                'prev_ord': prev_ord,
+                'next_ord': next_ord
             }
             return make_response(data, 200)
         except Exception as e:
@@ -102,12 +163,40 @@ class QuestController:
             logging.exception(e)
             return make_response('An error occurred', 500)
     
+    def get_by_id(self, id):
+        try:
+            db = self.dbHelper.get_db()
+            quest = db["Quest"].rows_where(f"id = ?",[id], limit=1)
+            quest = list(quest)[0]
+            return make_response(quest, 200)
+        except Exception as e:
+            logging.exception(e)
+            return make_response('An error occurred', 500)
+        
     def change_status(self, request):
         try:
             db = self.dbHelper.get_db()
             id = request.form.get('id')
             new_status = request.form.get('status')
             
+            res = self.get_by_id(id)
+            if res.status_code != 200:
+                return res
+            quest = json.loads(res.data)
+            old_status = quest['status']
+
+            if old_status != 'Done' and new_status == 'Done':
+                playerController = PlayerController(self.dbHelper)
+                res = playerController.update_stat_quest_done(quest)
+                if res.status_code != 200:
+                    return res
+            
+            if old_status == 'Done' and new_status != 'Done':
+                playerController = PlayerController(self.dbHelper)
+                res = playerController.update_stat_quest_undone(quest)
+                if res.status_code != 200:
+                    return res
+                 
             db["Quest"].update(id, {"status": new_status})
             return make_response('Status updated successfully', 200)
         except sqlite3.IntegrityError:
@@ -128,6 +217,21 @@ class QuestController:
         except sqlite3.IntegrityError:
             logging.exception(sqlite3.IntegrityError)
             return make_response('Difficulty not existed', 400)
+        except Exception as e:
+            logging.exception(e)
+            return make_response('An error occurred', 500)
+        
+    def change_ord(self, request):
+        try:
+            db = self.dbHelper.get_db()
+            id = request.form.get('id')
+            ord = request.form.get('ord')
+            
+            db["Quest"].update(id, {"ord": ord})
+            return make_response('Order updated successfully', 200)
+        except sqlite3.IntegrityError:
+            logging.exception(sqlite3.IntegrityError)
+            return make_response('Order not existed', 400)
         except Exception as e:
             logging.exception(e)
             return make_response('An error occurred', 500)

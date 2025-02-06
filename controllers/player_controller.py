@@ -1,9 +1,12 @@
+import json
 from flask import jsonify
 from sqlite_utils.utils import sqlite3
 import logging
 from flask import make_response
 
 class PlayerController:
+    exp_2_lv_up = 300
+    
     def __init__(self, dbHelper):
         self.dbHelper = dbHelper
         
@@ -59,7 +62,7 @@ class PlayerController:
             db = self.dbHelper.get_db()
 
             player = db["Player"].rows_where(f"email = ?",[email], limit=1, 
-                                            select="id, email, name, level, exp, money")
+                                            select="id, email, name, level, exp, money, progress")
             player = list(player)[0]
             
             return make_response(player, 200)
@@ -67,6 +70,62 @@ class PlayerController:
         except Exception as e:
             logging.exception(e)
             return make_response('Can not find player', 404)
+
+    def get_by_id(self, id):
+        try:
+            db = self.dbHelper.get_db()
+            player = db["Player"].rows_where(f"id = ?",[id], limit=1)
+            player = list(player)[0]
+            return make_response(player, 200)
+        except Exception as e:
+            logging.exception(e)
+            return make_response('An error occurred', 500)
+        
+    def update_stat_quest_done(self, quest):
+        res = self.get_by_id(quest['player_id'])
+        if res.status_code != 200:
+            return res
+        player = json.loads(res.data)
+        
+        try:
+            money = player['money'] + quest['money']
+            exp = player['exp'] + quest['exp']
+            lv = exp//PlayerController.exp_2_lv_up
+            progress = (exp % PlayerController.exp_2_lv_up) * 100 / PlayerController.exp_2_lv_up
+            progress = round(progress, 2)
+            
+            db = self.dbHelper.get_db()
+            db["Player"].update(quest['player_id'], 
+                                {"level": lv, "exp": exp, 
+                                "money": money, "progress": progress})
+
+            return make_response('Player stat update successfully', 200)
+        except Exception as e:
+            logging.exception(e)
+            return make_response('An error occurred', 500)
+    
+    def update_stat_quest_undone(self, quest):
+        res = self.get_by_id(quest['player_id'])
+        if res.status_code != 200:
+            return res
+        player = json.loads(res.data)
+        
+        try:
+            money = player['money'] - quest['money']
+            exp = player['exp'] - quest['exp']
+            lv = exp//PlayerController.exp_2_lv_up
+            progress = (exp % PlayerController.exp_2_lv_up) * 100 / PlayerController.exp_2_lv_up
+            progress = round(progress, 2)
+            
+            db = self.dbHelper.get_db()
+            db["Player"].update(quest['player_id'], 
+                                {"level": lv, "exp": exp, 
+                                "money": money, "progress": progress})
+
+            return make_response('Player stat update successfully', 200)
+        except Exception as e:
+            logging.exception(e)
+            return make_response('An error occurred', 500)
         
     def get_id_by_email(self, email):
         try:
