@@ -143,22 +143,28 @@ def get_quest():
     return res
 
 @app.route('/create-quest', methods=["POST"])
+@token_required
 def create_quest():
+    token = request.cookies.get('auth_token')
+    res = get_player_id_by_token(token)
+    if res.status_code != 200:
+        return res
+    player_id = json.loads(res.data)['id']
     questController = QuestController(dbHelper)
-    res = questController.create_quest(request)
+    res = questController.create_quest(request, player_id)
     return res
     
 @app.route('/change-quest-status', methods=["POST"])
-# @token_required
-# @check_authorized_quest
+@token_required
+@check_authorized_quest
 def change_quest_status():
     questController = QuestController(dbHelper)
     res = questController.change_status(request)
     return res
 
 @app.route('/change-quest-ord', methods=["POST"])
-# @token_required
-# @check_authorized_quest
+@token_required
+@check_authorized_quest
 def change_quest_ord():
     questController = QuestController(dbHelper)
     res = questController.change_ord(request)

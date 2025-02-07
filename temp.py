@@ -38,11 +38,20 @@ orders = ['0|100000:', '0|100008:', '0|10000g:', '0|10000o:', '0|10000w:', '0|10
 # print(sorted(orders))
 
 # db['Quest'].transform(rename={"order": "ord"})
-res = db["Quest"].rows_where('player_id = ? and status = ?', [1, 'Done'], order_by='ord asc', select='id') 
-ids = list(res)
-ids = [id['id'] for id in ids]
-# print(ids)
-# ids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17]
+# res = db["Quest"].rows_where('player_id = ? and status = ?', [1, 'Done'], order_by='ord asc', select='id') 
+# ids = list(res)
+# ids = [id['id'] for id in ids]
+# # print(ids)
+# # ids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17]
 
-for i in range(len(ids)):
-    db["Quest"].update(ids[i], {"ord": orders[i]})
+# for i in range(len(ids)):
+#     db["Quest"].update(ids[i], {"ord": orders[i]})
+
+
+# res = db["Quest"].rows_where() 
+# res = list(res)
+
+for i in range(22,84):
+    db["Quest"].delete(i)
+
+

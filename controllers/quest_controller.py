@@ -9,7 +9,7 @@ from controllers.player_controller import PlayerController
 
 class QuestController:
     difficulty_exp_map = {
-        "Trivial": (0, 20),
+        "Trivial": (1, 20),
         "Easy": (20, 100),
         "Normal": (100, 200),
         "Hard": (200, 300),
@@ -59,7 +59,6 @@ class QuestController:
         if len(quest) < 1:
             return None
         quest = quest[0]
-        print("pre_quest", quest)
         return quest['ord']
     
     def get_next_page_ord_by_type(self, player_id, page, per_page, type, type_count):
@@ -74,7 +73,6 @@ class QuestController:
         if len(quest) < 1:
             return None
         quest = quest[0]
-        print("next_quest", quest)
         return quest['ord']
     
     def get_prev_page_ord(self, player_id, page, per_page, type_counts):
@@ -133,29 +131,29 @@ class QuestController:
             logging.exception(e)
             return make_response('Can not find quest', 404)
     
-    def create_quest(self, request):
+    def create_quest(self, request, player_id):
         try:
             db = self.dbHelper.get_db()
             name = request.form.get('name')
             status = request.form.get('status')
             difficulty = request.form.get('difficulty')
-            player_id = request.form.get('playerId')
+            ord = request.form.get('ord')
             exp = self.__get_exp_from_difficulty(difficulty)
             money = self.__get_money_from_difficulty(difficulty)
 
-            if not name or not status or not difficulty or not player_id:
-                return jsonify({'error': 'Name, status, difficulty and playerId are required'}), 400
+            if not name or not status or not difficulty:
+                return jsonify({'error': 'Name, status, difficulty are required'}), 400
             player_id = int(player_id)
-            print(player_id)
-            db['Quest'].insert({
+            questTable = db['Quest'].insert({
                 'name': name,
                 'status': status,
                 'difficulty': difficulty,
                 'exp': exp,
                 'money': money,
+                'ord': ord,
                 'player_id': player_id
             })
-            return make_response('Quest created successfully', 200)
+            return self.get_by_id(questTable.last_rowid)
         except sqlite3.IntegrityError:
             logging.exception(sqlite3.IntegrityError)
             return make_response('User not existed', 400)
@@ -241,3 +239,5 @@ class QuestController:
     
     def __get_money_from_difficulty(self, difficulty):
         return self.__get_exp_from_difficulty(difficulty)*2
+
+    
