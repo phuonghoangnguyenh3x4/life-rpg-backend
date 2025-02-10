@@ -138,6 +138,7 @@ class QuestController:
             status = request.form.get('status')
             difficulty = request.form.get('difficulty')
             ord = request.form.get('ord')
+            note = request.form.get('note')
             exp = self.__get_exp_from_difficulty(difficulty)
             money = self.__get_money_from_difficulty(difficulty)
 
@@ -151,7 +152,8 @@ class QuestController:
                 'exp': exp,
                 'money': money,
                 'ord': ord,
-                'player_id': player_id
+                'player_id': player_id,
+                'note': note
             })
             return self.get_by_id(questTable.last_rowid)
         except sqlite3.IntegrityError:

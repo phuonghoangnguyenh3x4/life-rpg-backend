@@ -31,6 +31,7 @@ class Migrator:
                 money INTEGER,
                 order TEXT,
                 player_id INTEGER NOT NULL,
+                note TEXT,
                 FOREIGN KEY (player_id) REFERENCES Player(id)
             )
             ''')

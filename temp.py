@@ -27,13 +27,13 @@ db = sqlite_utils.Database(DB_URL)
 # progress = round(progress, 2)
 
 # res = db["Player"].update(1, {"level": lv, "exp": exp, "money": money})
-# db["Quest"].add_column("order", str)
+# db["Quest"].add_column("note", str)
 
 # db["Player"].update(1, {"progress": progress})
 
 # print(list(res))
 # '0|000000:', 
-orders = ['0|100000:', '0|100008:', '0|10000g:', '0|10000o:', '0|10000w:', '0|100014:', '0|10001c:', '0|10001k:', '0|10001s:', '0|100020:', '0|100028:', '0|10002g:', '0|10002o:', '0|10002w:', '0|100034:']
+# orders = ['0|100000:', '0|100008:', '0|10000g:', '0|10000o:', '0|10000w:', '0|100014:', '0|10001c:', '0|10001k:', '0|10001s:', '0|100020:', '0|100028:', '0|10002g:', '0|10002o:', '0|10002w:', '0|100034:']
 
 # print(sorted(orders))
 
@@ -51,7 +51,9 @@ orders = ['0|100000:', '0|100008:', '0|10000g:', '0|10000o:', '0|10000w:', '0|10
 # res = db["Quest"].rows_where() 
 # res = list(res)
 
-for i in range(22,84):
-    db["Quest"].delete(i)
+# for i in range(22,84):
+#     db["Quest"].delete(i)
+
+db["Quest"].delete(39)
 
 

@@ -114,7 +114,6 @@ def get_player():
     email = token_dict['username']
     playerController = PlayerController(dbHelper)
     res = playerController.get_player_by_email(email)
-    print(res)
     return res
 
 def get_player_id_by_token(token):
