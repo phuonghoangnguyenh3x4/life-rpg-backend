@@ -150,16 +150,21 @@ def create_quest():
         return res
     player_id = json.loads(res.data)['id']
     questController = QuestController(dbHelper)
-    res = questController.create_quest(request, player_id)
-    return res
+    return questController.create_quest(request, player_id)
+
+@app.route('/update-quest', methods=["POST"])
+@token_required
+@check_authorized_quest
+def update_quest():
+    questController = QuestController(dbHelper)
+    return questController.update_quest(request)
     
 @app.route('/change-quest-status', methods=["POST"])
 @token_required
 @check_authorized_quest
 def change_quest_status():
     questController = QuestController(dbHelper)
-    res = questController.change_status(request)
-    return res
+    return questController.change_status(request)
 
 @app.route('/change-quest-ord', methods=["POST"])
 @token_required
@@ -174,8 +179,7 @@ def change_quest_ord():
 @check_authorized_quest
 def change_quest_difficulty():
     questController = QuestController(dbHelper)
-    res = questController.change_difficulty(request)
-    return res
+    return questController.change_difficulty(request)
 
 @app.route('/get-users')
 def get_users():

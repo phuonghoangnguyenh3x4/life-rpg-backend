@@ -155,7 +155,8 @@ class QuestController:
                 'player_id': player_id,
                 'note': note
             })
-            return self.get_by_id(questTable.last_rowid)
+            new_quest = self.get_by_id(questTable.last_rowid)
+            return make_response(new_quest, 200)
         except sqlite3.IntegrityError:
             logging.exception(sqlite3.IntegrityError)
             return make_response('User not existed', 400)
@@ -163,6 +164,28 @@ class QuestController:
             logging.exception(e)
             return make_response('An error occurred', 500)
     
+    def update_quest(self, request):
+        try:
+            id = request.form.get('id')
+            name = request.form.get('name')
+            difficulty = request.form.get('difficulty')
+            note = request.form.get('note')
+            exp = self.__get_exp_from_difficulty(difficulty)
+            money = self.__get_money_from_difficulty(difficulty)
+
+            db = self.dbHelper.get_db()
+            db["Quest"].update(id, {"name": name,
+                                    "difficulty": difficulty,
+                                    "exp": exp,
+                                    "money": money,
+                                    "note": note})
+            
+            updated_quest = self.get_by_id(id)
+            return make_response(updated_quest, 200)
+        except Exception as e:
+            logging.exception(e)
+            return make_response('An error occurred', 500)
+        
     def get_by_id(self, id):
         try:
             db = self.dbHelper.get_db()
