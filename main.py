@@ -158,6 +158,13 @@ def create_quest():
 def update_quest():
     questController = QuestController(dbHelper)
     return questController.update_quest(request)
+
+@app.route('/delete-quest', methods=["POST"])
+@token_required
+@check_authorized_quest
+def delete_quest():
+    questController = QuestController(dbHelper)
+    return questController.delete_quest(request)
     
 @app.route('/change-quest-status', methods=["POST"])
 @token_required

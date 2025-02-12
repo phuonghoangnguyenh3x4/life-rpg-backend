@@ -54,6 +54,6 @@ db = sqlite_utils.Database(DB_URL)
 # for i in range(22,84):
 #     db["Quest"].delete(i)
 
-db["Quest"].delete(58)
+# db["Quest"].delete(58)
 
 

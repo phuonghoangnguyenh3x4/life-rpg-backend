@@ -185,7 +185,17 @@ class QuestController:
         except Exception as e:
             logging.exception(e)
             return make_response('An error occurred', 500)
-        
+
+    def delete_quest(self, request):
+        try:
+            db = self.dbHelper.get_db()
+            id = request.form.get('id')
+            db["Quest"].delete(id)
+            return make_response('Delete quest successfully', 200)
+        except Exception as e:
+            logging.exception(e)
+            return make_response('An error occurred', 500)
+       
     def get_by_id(self, id):
         try:
             db = self.dbHelper.get_db()
