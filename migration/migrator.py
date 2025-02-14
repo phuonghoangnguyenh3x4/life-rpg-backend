@@ -32,6 +32,7 @@ class Migrator:
                 order TEXT,
                 player_id INTEGER NOT NULL,
                 note TEXT,
+                seed INTEGER,
                 FOREIGN KEY (player_id) REFERENCES Player(id)
             )
             ''')

@@ -27,7 +27,7 @@ db = sqlite_utils.Database(DB_URL)
 # progress = round(progress, 2)
 
 # res = db["Player"].update(1, {"level": lv, "exp": exp, "money": money})
-# db["Quest"].add_column("note", str)
+# db["Quest"].add_column("seed", int)
 
 # db["Player"].update(1, {"progress": progress})
 

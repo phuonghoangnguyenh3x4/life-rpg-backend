@@ -6,6 +6,7 @@ from flask import make_response
 import random
 
 from controllers.player_controller import PlayerController
+from helpers.randint import randint
 
 class QuestController:
     difficulty_exp_map = {
@@ -139,8 +140,9 @@ class QuestController:
             difficulty = request.form.get('difficulty')
             ord = request.form.get('ord')
             note = request.form.get('note')
-            exp = self.__get_exp_from_difficulty(difficulty)
-            money = self.__get_money_from_difficulty(difficulty)
+            seed = randint.get()
+            exp = self.__get_exp_from_difficulty(difficulty, seed)
+            money = self.__get_money_from_difficulty(difficulty, seed)
 
             if not name or not status or not difficulty:
                 return jsonify({'error': 'Name, status, difficulty are required'}), 400
@@ -170,12 +172,22 @@ class QuestController:
             name = request.form.get('name')
             difficulty = request.form.get('difficulty')
             note = request.form.get('note')
-            exp = self.__get_exp_from_difficulty(difficulty)
-            money = self.__get_money_from_difficulty(difficulty)
+
+            res = self.get_by_id(id)
+            if res.status_code != 200:
+                return res
+            quest = json.loads(res.data)
+            print("quest", quest)
+            seed = quest['seed']
+            if seed == None:
+                seed = randint.get()
+            exp = self.__get_exp_from_difficulty(difficulty, seed)
+            money = self.__get_money_from_difficulty(difficulty, seed)
 
             db = self.dbHelper.get_db()
             db["Quest"].update(id, {"name": name,
                                     "difficulty": difficulty,
+                                    "seed": seed,
                                     "exp": exp,
                                     "money": money,
                                     "note": note})
@@ -269,10 +281,11 @@ class QuestController:
             logging.exception(e)
             return make_response('An error occurred', 500)
     
-    def __get_exp_from_difficulty(self, difficulty):
-        return random.randint(*QuestController.difficulty_exp_map[difficulty])
+    def __get_exp_from_difficulty(self, difficulty, seed):
+        return randint.get(seed, QuestController.difficulty_exp_map[difficulty])
     
-    def __get_money_from_difficulty(self, difficulty):
-        return self.__get_exp_from_difficulty(difficulty)*2
+    def __get_money_from_difficulty(self, difficulty, seed):
+        return randint.get(seed + 1, QuestController.difficulty_exp_map[difficulty])*2
+
 
     
