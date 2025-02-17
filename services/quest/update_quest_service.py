@@ -2,13 +2,14 @@ from flask import make_response
 from helpers.randint import randint
 from helpers.quest_helper import get_exp_from_difficulty, get_money_from_difficulty
 from services.quest.get_quest_service import GetQuestService
+from services.player.update_player_service import UpdatePlayerService
 import json
-from controllers.player_controller import PlayerController
 
 class UpdateQuestService:
     def __init__(self, dbHelper):
         self._dbHelper = dbHelper
         self._get_quest_service = GetQuestService(dbHelper)
+        self._update_player_service = UpdatePlayerService(dbHelper)
 
     def update_quest(self, request):
         id = request.form.get('id')
@@ -50,14 +51,12 @@ class UpdateQuestService:
         old_status = quest['status']
 
         if old_status != 'Done' and new_status == 'Done':
-            playerController = PlayerController(self._dbHelper)
-            res = playerController.update_stat_quest_done(quest)
+            res = self._update_player_service.update_stat_quest_done(quest)
             if res.status_code != 200:
                 return res
         
         if old_status == 'Done' and new_status != 'Done':
-            playerController = PlayerController(self._dbHelper)
-            res = playerController.update_stat_quest_undone(quest)
+            res = self._update_player_service.update_stat_quest_undone(quest)
             if res.status_code != 200:
                 return res
                 

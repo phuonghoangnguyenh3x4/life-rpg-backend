@@ -17,6 +17,8 @@ DB_URL = os.getenv("DB_URL")
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 dbHelper = DBHelper(DB_URL)
+questController = QuestController(dbHelper)
+playerController = PlayerController(dbHelper)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = base64.b64decode(SECRET_KEY)
@@ -63,7 +65,6 @@ def check_authorized_quest(f):
         if res.status_code != 200:
             return res
         player_id_1 = json.loads(res.data)['id']
-        questController = QuestController(dbHelper)
         res = questController.get_player_id(request)
         if res.status_code != 200:
             return res
@@ -73,10 +74,8 @@ def check_authorized_quest(f):
         return f(*args, **kwargs)
     return decorated
 
-
 @app.route('/create-account', methods=["POST"])
 def create_account():
-    playerController = PlayerController(dbHelper)
     res = playerController.create_account(request)
     email = request.form.get('email')
     if res.status_code == 201:
@@ -86,7 +85,6 @@ def create_account():
 
 @app.route('/login', methods=["POST"])
 def login():
-    playerController = PlayerController(dbHelper)
     res = playerController.login(request)
     email = request.form.get('email')
     if res.status_code == 202:
@@ -97,9 +95,7 @@ def login():
 @app.route('/logout', methods=["POST"])
 @token_required
 def logout():
-    res = make_response('Logout successful')
-    res.set_cookie('auth_token', '', httponly=True, secure=True, samesite='none', expires=0)
-    return res
+    return playerController.logout()
 
 @app.route('/get-player')
 @token_required
@@ -112,7 +108,6 @@ def get_player():
     json_string = res.data.decode('utf-8')
     token_dict = json.loads(json_string)
     email = token_dict['username']
-    playerController = PlayerController(dbHelper)
     res = playerController.get_player_by_email(email)
     return res
 
@@ -125,7 +120,6 @@ def get_player_id_by_token(token):
     json_string = res.data.decode('utf-8')
     token_dict = json.loads(json_string)
     email = token_dict['username']
-    playerController = PlayerController(dbHelper)
     return playerController.get_id_by_email(email)
 
 @app.route('/get-quest')
@@ -136,9 +130,7 @@ def get_quest():
     if res.status_code != 200:
         return res
     id = json.loads(res.data)['id']
-    questController = QuestController(dbHelper)
     res = questController.get_quest_by_player(request, id)
-    print(res)
     return res
 
 @app.route('/create-quest', methods=["POST"])
@@ -156,28 +148,24 @@ def create_quest():
 @token_required
 @check_authorized_quest
 def update_quest():
-    questController = QuestController(dbHelper)
     return questController.update_quest(request)
 
 @app.route('/delete-quest', methods=["POST"])
 @token_required
 @check_authorized_quest
 def delete_quest():
-    questController = QuestController(dbHelper)
     return questController.delete_quest(request)
     
 @app.route('/change-quest-status', methods=["POST"])
 @token_required
 @check_authorized_quest
 def change_quest_status():
-    questController = QuestController(dbHelper)
     return questController.change_status(request)
 
 @app.route('/change-quest-ord', methods=["POST"])
 @token_required
 @check_authorized_quest
 def change_quest_ord():
-    questController = QuestController(dbHelper)
     res = questController.change_ord(request)
     return res
 
