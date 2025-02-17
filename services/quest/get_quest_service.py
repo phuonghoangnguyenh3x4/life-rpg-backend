@@ -1,6 +1,6 @@
 from flask import make_response
 import logging
-from helpers.pagination_helper import get_limit_offset
+from utils.pagination_utils import get_limit_offset
 
 class GetQuestService:
     def __init__(self, dbHelper):
@@ -110,6 +110,7 @@ class GetQuestService:
             'prev_ord': prev_ord,
             'next_ord': next_ord
         }
+        print(data)
         return make_response(data, 200)
     
     def get_player_id(self, request):

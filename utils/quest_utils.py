@@ -1,4 +1,4 @@
-from helpers.randint import randint
+from utils.randint import randint
 
 difficulty_exp_map = {
     "Trivial": (1, 20),

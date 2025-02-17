@@ -1,6 +1,6 @@
 from flask import make_response
 import json
-from helpers.config import exp_2_lv_up
+from config.player_config import exp_2_lv_up
 from services.player.get_player_service import GetPlayerService
 
 class UpdatePlayerService:

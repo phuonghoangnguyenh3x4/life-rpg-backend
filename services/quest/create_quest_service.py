@@ -1,6 +1,6 @@
 from flask import make_response
-from helpers.randint import randint
-from helpers.quest_helper import get_exp_from_difficulty, get_money_from_difficulty
+from utils.randint import randint
+from utils.quest_utils import get_exp_from_difficulty, get_money_from_difficulty
 from flask import jsonify
 from services.quest.get_quest_service import GetQuestService
 
