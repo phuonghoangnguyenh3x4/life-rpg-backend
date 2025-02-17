@@ -181,13 +181,6 @@ def change_quest_ord():
     res = questController.change_ord(request)
     return res
 
-@app.route('/change-quest-difficulty', methods=["POST"])
-@token_required
-@check_authorized_quest
-def change_quest_difficulty():
-    questController = QuestController(dbHelper)
-    return questController.change_difficulty(request)
-
 @app.route('/get-users')
 def get_users():
     db = dbHelper.get_db()
