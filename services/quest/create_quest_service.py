@@ -3,11 +3,14 @@ from utils.randint import randint
 from utils.quest_utils import get_exp_from_difficulty, get_money_from_difficulty
 from flask import jsonify
 from services.quest.get_quest_service import GetQuestService
-
+from enums.quest_status import QuestStatus
+import json
+from services.player.update_player_service import UpdatePlayerService
 class CreateQuestService:
     def __init__(self, dbHelper):
         self._dbHelper = dbHelper
         self._get_quest_service = GetQuestService(dbHelper)
+        self._update_player_service = UpdatePlayerService(dbHelper)
 
     def create_quest(self, request, player_id):
         db = self._dbHelper.get_db()
@@ -34,6 +37,17 @@ class CreateQuestService:
             'player_id': player_id,
             'note': note
         })
-        new_quest = self._get_quest_service._get_by_id(questTable.last_rowid)
-        return make_response(new_quest, 200)
+        res = self._get_quest_service._get_by_id(questTable.last_rowid)
+        self.__update_stat_quest_done(status, res)
+        return make_response(res, 200)
+    
+    def __update_stat_quest_done(self, status, get_quest_service_res):
+        if status != QuestStatus.Done:
+            return
+
+        res = get_quest_service_res
+        if res.status_code != 200:
+            return res
+        quest = json.loads(res.data)
+        res = self._update_player_service.update_stat_quest_done(quest)
     

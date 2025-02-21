@@ -110,7 +110,6 @@ class GetQuestService:
             'prev_ord': prev_ord,
             'next_ord': next_ord
         }
-        print(data)
         return make_response(data, 200)
     
     def get_player_id(self, request):

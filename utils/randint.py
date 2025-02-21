@@ -10,5 +10,3 @@ class randint:
         if args: 
             return random.randint(*args)
         return random.randint(0, MAX_INT)
-    
-print(randint.get())

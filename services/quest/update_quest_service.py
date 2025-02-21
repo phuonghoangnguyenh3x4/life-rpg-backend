@@ -4,7 +4,7 @@ from utils.quest_utils import get_exp_from_difficulty, get_money_from_difficulty
 from services.quest.get_quest_service import GetQuestService
 from services.player.update_player_service import UpdatePlayerService
 import json
-
+from enums.quest_status import QuestStatus
 class UpdateQuestService:
     def __init__(self, dbHelper):
         self._dbHelper = dbHelper
@@ -21,7 +21,6 @@ class UpdateQuestService:
         if res.status_code != 200:
             return res
         quest = json.loads(res.data)
-        print("quest", quest)
         seed = quest['seed']
         if seed == None:
             seed = randint.get()
@@ -50,12 +49,12 @@ class UpdateQuestService:
         quest = json.loads(res.data)
         old_status = quest['status']
 
-        if old_status != 'Done' and new_status == 'Done':
+        if old_status != QuestStatus.Done and new_status == QuestStatus.Done:
             res = self._update_player_service.update_stat_quest_done(quest)
             if res.status_code != 200:
                 return res
         
-        if old_status == 'Done' and new_status != 'Done':
+        if old_status == QuestStatus.Done and new_status != QuestStatus.Done:
             res = self._update_player_service.update_stat_quest_undone(quest)
             if res.status_code != 200:
                 return res
