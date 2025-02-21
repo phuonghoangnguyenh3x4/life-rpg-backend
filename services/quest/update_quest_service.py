@@ -21,9 +21,7 @@ class UpdateQuestService:
         if res.status_code != 200:
             return res
         quest = json.loads(res.data)
-        seed = quest['seed']
-        if seed == None:
-            seed = randint.get()
+        seed = quest['seed'] if quest['seed'] != None else randint.get()
         exp = get_exp_from_difficulty(difficulty, seed)
         money = get_money_from_difficulty(difficulty, seed)
 
@@ -35,8 +33,9 @@ class UpdateQuestService:
                                 "money": money,
                                 "note": note})
         
-        updated_quest = self._get_quest_service._get_by_id(id)
-        return make_response(updated_quest, 200)
+        res = self._get_quest_service._get_by_id(id)
+        self.__update_stat_quest_done(quest, res)
+        return make_response(res, 200)
     
     def change_status(self, request):
         db = self._dbHelper.get_db()
@@ -69,4 +68,16 @@ class UpdateQuestService:
         
         db["Quest"].update(id, {"ord": ord})
         return make_response('Order updated successfully', 200)
+    
+    def __update_stat_quest_done(self, old_quest, get_quest_service_res):
+        status = old_quest['status']
+        if status != QuestStatus.Done:
+            return
+
+        res = get_quest_service_res
+        if res.status_code != 200:
+            return res
+        new_quest = json.loads(res.data)
+        self._update_player_service.update_stat_quest_undone(old_quest)
+        self._update_player_service.update_stat_quest_done(new_quest)
     
