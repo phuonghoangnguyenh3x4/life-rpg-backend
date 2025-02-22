@@ -5,10 +5,14 @@ from routes.auth import auth_bp
 from routes.player import player_bp
 from routes.quest import quest_bp
 
+allowed_origins = [
+    "http://localhost:5173/"
+]
+
 def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = AppConfig.SECRET_KEY
-    CORS(app, supports_credentials=True)
+    CORS(app, supports_credentials=True, resources={r"/*": {"origins": allowed_origins}})
 
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(player_bp, url_prefix='/player')
