@@ -1,4 +1,4 @@
-class QuestStatus:
+class QuestStatus():
     Done = 'Done'
     Doing = 'Doing'
     Todo = 'Todo'

@@ -9,6 +9,8 @@ DB_URL = os.getenv("DB_URL")
 # Initialize the SQLite connection with thread safety
 db = sqlite_utils.Database(DB_URL)
 
+print(db)
+
 # db["Quest"].delete(10)
 
 # res = db.execute('''

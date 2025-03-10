@@ -6,7 +6,7 @@ from routes.player import player_bp
 from routes.quest import quest_bp
 
 allowed_origins = [
-    "http://localhost:5173/"
+    "http://localhost:5173"
 ]
 
 def create_app():

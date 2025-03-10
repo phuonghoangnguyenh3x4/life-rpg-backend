@@ -37,27 +37,30 @@ class UpdateQuestService:
         self.__update_stat_quest_done(quest, res)
         return make_response(res, 200)
     
-    def change_status(self, request):
-        db = self._dbHelper.get_db()
-        id = request.form.get('id')
-        new_status = request.form.get('status')
+    # def change_status(self, id: int, new_status: QuestStatus):
+    #     db = self._dbHelper.get_db()
         
-        res = self._get_quest_service._get_by_id(id)
-        if res.status_code != 200:
-            return res
-        quest = json.loads(res.data)
-        old_status = quest['status']
+    #     res = self._get_quest_service._get_by_id(id)
+    #     if res.status_code != 200:
+    #         return res
+    #     quest = json.loads(res.data)
+    #     old_status = quest['status']
 
-        if old_status != QuestStatus.Done and new_status == QuestStatus.Done:
-            res = self._update_player_service.update_stat_quest_done(quest)
-            if res.status_code != 200:
-                return res
+    #     if old_status != QuestStatus.Done and new_status == QuestStatus.Done:
+    #         res = self._update_player_service.update_stat_quest_done(quest)
+    #         if res.status_code != 200:
+    #             return res
         
-        if old_status == QuestStatus.Done and new_status != QuestStatus.Done:
-            res = self._update_player_service.update_stat_quest_undone(quest)
-            if res.status_code != 200:
-                return res
+    #     if old_status == QuestStatus.Done and new_status != QuestStatus.Done:
+    #         res = self._update_player_service.update_stat_quest_undone(quest)
+    #         if res.status_code != 200:
+    #             return res
                 
+    #     db["Quest"].update(id, {"status": new_status})
+    #     return make_response('Status updated successfully', 200)
+
+    def change_status(self, id: int, new_status: QuestStatus):
+        db = self._dbHelper.get_db()
         db["Quest"].update(id, {"status": new_status})
         return make_response('Status updated successfully', 200)
     

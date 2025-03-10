@@ -4,6 +4,8 @@ from services.quest.update_quest_service import UpdateQuestService
 from services.quest.delete_quest_service import DeleteQuestService
 from wrappers.general_exception_handler import general_exception_handler
 from wrappers.integrity_handler import integrity_error_handler
+from workflow.ChangeQuestStatusWorkflow.ChangeQuestStatusWorkflow import ChangeQuestStatusWorkflow
+from flask import make_response
 class QuestController:
     def __init__(self, dbHelper):
         self._dbHelper = dbHelper
@@ -33,10 +35,26 @@ class QuestController:
     def delete_quest(self, request):
         return self.delete_quest_service.delete_quest(request)
     
-    @general_exception_handler()
+    # @general_exception_handler()
+    # @integrity_error_handler('Status not existed')
+    # def change_status(self, request):
+    #     id: int = request.form.get('id')
+    #     new_status = request.form.get('status')
+    #     return self._update_quest_service.change_status(id, new_status)
+    
+
+    @general_exception_handler('Change status error')
     @integrity_error_handler('Status not existed')
     def change_status(self, request):
-        return self._update_quest_service.change_status(request)
+        id: int = request.form.get('id')
+        new_status = request.form.get('status')
+        context = {}
+        context['quest_id'] = id
+        context['new_status'] = new_status
+        context['db_helper'] = self._dbHelper
+        
+        ChangeQuestStatusWorkflow.execute(context)
+        return make_response('Status updated successfully', 200)
     
     @general_exception_handler()
     @integrity_error_handler('Order not existed')
