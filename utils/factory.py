@@ -3,6 +3,7 @@ from services.player.get_player_service import GetPlayerService
 from services.quest.get_quest_service import GetQuestService
 from controllers.player_controller import PlayerController
 from controllers.quest_controller import QuestController
+from controllers.heatmap_controller import HeatmapController
 
 def createGetPlayerService():
     dbHelper = DBHelper()
@@ -19,6 +20,10 @@ def createPlayerController():
 def createQuestController():
     dbHelper = DBHelper()
     return QuestController(dbHelper)
+
+def createHeatmapController():
+    dbHelper = DBHelper()
+    return HeatmapController(dbHelper)
 
 def createDBHelper():
     return DBHelper()

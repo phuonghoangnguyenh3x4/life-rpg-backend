@@ -14,3 +14,9 @@ class GetHeatmapService:
             count = list(res)[0]['count']
         
         return make_response(str(count), 200)
+    
+    def get_by_player_id(self, player_id):
+        db = self._dbHelper.get_db()
+        res = db["Heatmap"].rows_where(f"player_id = ?", [player_id], select="date, count")
+        res = list(res)
+        return make_response(res, 200)

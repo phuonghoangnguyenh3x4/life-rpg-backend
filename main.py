@@ -4,6 +4,7 @@ from config.app_config import AppConfig
 from routes.auth import auth_bp
 from routes.player import player_bp
 from routes.quest import quest_bp
+from routes.heatmap import heatmap_bp
 
 allowed_origins = [
     "http://localhost:5173"
@@ -17,6 +18,7 @@ def create_app():
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(player_bp, url_prefix='/player')
     app.register_blueprint(quest_bp, url_prefix='/quest')
+    app.register_blueprint(heatmap_bp, url_prefix='/heatmap')
     
     return app
 
