@@ -34,14 +34,6 @@ class QuestController:
     @general_exception_handler('An error occurred')
     def delete_quest(self, request):
         return self.delete_quest_service.delete_quest(request)
-    
-    # @general_exception_handler()
-    # @integrity_error_handler('Status not existed')
-    # def change_status(self, request):
-    #     id: int = request.form.get('id')
-    #     new_status = request.form.get('status')
-    #     return self._update_quest_service.change_status(id, new_status)
-    
 
     @general_exception_handler('Change status error')
     @integrity_error_handler('Status not existed')

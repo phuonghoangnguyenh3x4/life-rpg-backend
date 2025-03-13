@@ -5,6 +5,7 @@ from services.quest.get_quest_service import GetQuestService
 from services.player.update_player_service import UpdatePlayerService
 import json
 from enums.quest_status import QuestStatus
+import datetime
 class UpdateQuestService:
     def __init__(self, dbHelper):
         self._dbHelper = dbHelper
@@ -36,33 +37,16 @@ class UpdateQuestService:
         res = self._get_quest_service._get_by_id(id)
         self.__update_stat_quest_done(quest, res)
         return make_response(res, 200)
-    
-    # def change_status(self, id: int, new_status: QuestStatus):
-    #     db = self._dbHelper.get_db()
-        
-    #     res = self._get_quest_service._get_by_id(id)
-    #     if res.status_code != 200:
-    #         return res
-    #     quest = json.loads(res.data)
-    #     old_status = quest['status']
-
-    #     if old_status != QuestStatus.Done and new_status == QuestStatus.Done:
-    #         res = self._update_player_service.update_stat_quest_done(quest)
-    #         if res.status_code != 200:
-    #             return res
-        
-    #     if old_status == QuestStatus.Done and new_status != QuestStatus.Done:
-    #         res = self._update_player_service.update_stat_quest_undone(quest)
-    #         if res.status_code != 200:
-    #             return res
-                
-    #     db["Quest"].update(id, {"status": new_status})
-    #     return make_response('Status updated successfully', 200)
 
     def change_status(self, id: int, new_status: QuestStatus):
         db = self._dbHelper.get_db()
         db["Quest"].update(id, {"status": new_status})
         return make_response('Status updated successfully', 200)
+    
+    def change_done_date(self, id: int, date: datetime.datetime):
+        db = self._dbHelper.get_db()
+        db["Quest"].update(id, {"done_date": date})
+        return make_response('Done date updated successfully', 200)
     
     def change_ord(self, request):
         db = self._dbHelper.get_db()
@@ -83,4 +67,3 @@ class UpdateQuestService:
         new_quest = json.loads(res.data)
         self._update_player_service.update_stat_quest_undone(old_quest)
         self._update_player_service.update_stat_quest_done(new_quest)
-    

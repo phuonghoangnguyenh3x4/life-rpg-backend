@@ -21,7 +21,7 @@ class task4(Task):
     def execute(self, context):
         raise ValueError("Self error")
 
-sequential_workflow = get_sequential_workflow(task1, task2, task3, task4)
+sequential_workflow = get_sequential_workflow(task1, task2, task4, task3)
 
 context = {} # Shared context
 sequential_workflow.execute(context)
