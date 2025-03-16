@@ -118,3 +118,9 @@ class GetQuestService:
         res = db["Quest"].rows_where(f"id = ?", [quest_id], select="player_id")
         quest = list(res)[0]
         return make_response(quest, 200)
+    
+    def get_done_date(self, quest_id):
+        db = self._dbHelper.get_db()
+        res = db["Quest"].rows_where(f"id = ?", [quest_id], select="done_date")
+        done_date = list(res)[0]
+        return make_response(done_date, 200)

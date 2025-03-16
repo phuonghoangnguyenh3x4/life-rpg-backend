@@ -48,6 +48,11 @@ class UpdateQuestService:
         db["Quest"].update(id, {"done_date": date})
         return make_response('Done date updated successfully', 200)
     
+    def remove_done_date(self, id: int):
+        db = self._dbHelper.get_db()
+        db["Quest"].update(id, {"done_date": None})
+        return make_response('Done date removed successfully', 200)
+    
     def change_ord(self, request):
         db = self._dbHelper.get_db()
         id = request.form.get('id')
