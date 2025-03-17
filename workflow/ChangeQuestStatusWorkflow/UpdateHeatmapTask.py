@@ -3,7 +3,7 @@ from services.heatmap.update_heatmap_service import UpdateHeatmapService
 from utils.quest_utils import isQuestMadeDone, isQuestMadeUndone
 import datetime
 
-class UpdateHeatmap(Task):
+class UpdateHeatmapTask(Task):
     def execute(self, context):
         old_status = context['old_status']
         new_status = context['new_status']

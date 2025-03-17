@@ -5,6 +5,7 @@ from services.quest.delete_quest_service import DeleteQuestService
 from wrappers.general_exception_handler import general_exception_handler
 from wrappers.integrity_handler import integrity_error_handler
 from workflow.ChangeQuestStatusWorkflow.ChangeQuestStatusWorkflow import ChangeQuestStatusWorkflow
+from workflow.AddQuestWorkflow.AddQuestWorkflow import AddQuestWorkflow
 from flask import make_response
 class QuestController:
     def __init__(self, dbHelper):
@@ -25,7 +26,15 @@ class QuestController:
     @general_exception_handler()
     @integrity_error_handler('User not existed')
     def create_quest(self, request, player_id):
-        return self._create_quest_service.create_quest(request, player_id)
+        context = {}
+        context['request'] = request
+        context['player_id'] = player_id
+        context['db_helper'] = self._dbHelper
+        
+        AddQuestWorkflow.execute(context)
+
+        new_quest = context['new_quest']
+        return make_response(new_quest, 200)
     
     @general_exception_handler()
     def update_quest(self, request):
