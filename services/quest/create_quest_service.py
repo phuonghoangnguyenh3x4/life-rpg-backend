@@ -5,12 +5,10 @@ from flask import jsonify
 from services.quest.get_quest_service import GetQuestService
 from enums.quest_status import QuestStatus
 import datetime
-from services.player.update_player_service import UpdatePlayerService
 class CreateQuestService:
     def __init__(self, dbHelper):
         self._dbHelper = dbHelper
         self._get_quest_service = GetQuestService(dbHelper)
-        self._update_player_service = UpdatePlayerService(dbHelper)
 
     def create_quest(self, request, player_id):
         db = self._dbHelper.get_db()

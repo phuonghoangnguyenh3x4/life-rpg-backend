@@ -6,6 +6,7 @@ from wrappers.general_exception_handler import general_exception_handler
 from wrappers.integrity_handler import integrity_error_handler
 from workflow.ChangeQuestStatusWorkflow.ChangeQuestStatusWorkflow import ChangeQuestStatusWorkflow
 from workflow.AddQuestWorkflow.AddQuestWorkflow import AddQuestWorkflow
+from workflow.DeleteQuestWorkflow.DeleteQuestWorkflow import DeleteQuestWorkflow
 from flask import make_response
 class QuestController:
     def __init__(self, dbHelper):
@@ -42,7 +43,11 @@ class QuestController:
 
     @general_exception_handler('An error occurred')
     def delete_quest(self, request):
-        return self.delete_quest_service.delete_quest(request)
+        context = {}
+        context['quest_id'] = request.form.get('id')
+        context['db_helper'] = self._dbHelper
+        DeleteQuestWorkflow.execute(context)
+        return make_response('Quest removed successfully', 200)
 
     @general_exception_handler('Change status error')
     @integrity_error_handler('Status not existed')
